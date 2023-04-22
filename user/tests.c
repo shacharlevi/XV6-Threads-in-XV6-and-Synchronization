@@ -1,43 +1,26 @@
-#include <stdio.h>
+
 #include "uthread.h"
-
-void thread1() {
-    printf("This is thread 1\n");
-        uthread_exit();
-}
-
-void thread2() {
-    printf("This is thread 2\n");
-        uthread_exit();
-
-}
-void thread3() {
-    printf("This is thread 3\n");
-            uthread_exit();
+#include "kernel/types.h"
+#include "user/user.h"
+void* thread_func(void* arg) {
+    int* arg_ptr = (int*) arg;
+    int arg_val = *arg_ptr;
+    printf("Thread %d started\n", arg_val);
+    // uthread_exit();
+    // printf("Thread %d resumed\n", arg_val);
+    return (void*) 0;
 
 }
 
 int main() {
-    int t1 = uthread_create(thread1, LOW);
-    int t2 = uthread_create(thread2, HIGH);
-    int t3 = uthread_create(thread1, MEDIUM);
-
-    if (t1 < 0 || t2 < 0 || t3<0) {
-        printf("Error: failed to create user threads\n");
-        return 1;
+    int arg1 = 1;
+    int arg2 = 2;
+    if (uthread_create((void (*)()) thread_func, arg1) == -1 ||
+        uthread_create((void (*)()) thread_func, arg2) == -1) {
+        printf("Error creating thread\n");
+        exit(1);
     }
-    uthread_yield();
-    printf("Switched to thread %d\n");
-    printf("Switched back to thread 1\n");
-    uthread_exit();
-    uthread_yield();
-    printf("Switched to thread 2\n");
-    uthread_exit();
-       uthread_yield();
-    if (uthread_create(thread1, HIGH) >= 0 || uthread_create(thread2,LOW) >= 0) {
-        printf("Error: user threads were not properly terminated\n");
-        return 1;
-    }
-    printf("All user threads terminated successfully\n");
+    uthread_start_all();
+    printf("Main thread resumed\n");
     return 0;
 }

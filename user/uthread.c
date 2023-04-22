@@ -2,10 +2,11 @@
 #include "kernel/types.h"
 #include "user/user.h"
 
-
+static int started = 0;
 // static int next_tid = 0; // initialize thread ID counter
 struct uthread uthreads_arr[MAX_UTHREADS];
 struct uthread *curr_thread;
+struct context garbageContext;
 
 int uthread_create(void (*start_func)(), enum sched_priority priority) {
     int i;
@@ -95,4 +96,27 @@ enum sched_priority uthread_set_priority(enum sched_priority priority){
 
 enum sched_priority uthread_get_priority(){
     return curr_thread->priority;
+}
+
+int uthread_start_all(){
+    if (started){
+        return -1;
+    }
+    started=1;
+    struct uthread *next_thread = (struct uthread *) 1;
+    enum sched_priority max_priority = LOW;
+    int count=0;
+    for (int i = curr_thread->id+1; count<MAX_UTHREADS;  count++,i=(i+1)%MAX_UTHREADS) {
+         
+        if (uthreads_arr[i].state == RUNNABLE &&
+            uthreads_arr[i].priority > max_priority) {
+            next_thread = &uthreads_arr[i];
+            max_priority = uthreads_arr[i].priority;
+        }
+    }
+    struct context *next_context = &next_thread->context;
+    next_thread->state = RUNNING;
+    curr_thread = next_thread;
+    uswtch(&garbageContext,next_context);
+    return -1;
 }
