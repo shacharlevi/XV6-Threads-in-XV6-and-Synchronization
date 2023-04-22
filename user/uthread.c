@@ -118,5 +118,10 @@ int uthread_start_all(){
     next_thread->state = RUNNING;
     curr_thread = next_thread;
     uswtch(&garbageContext,next_context);
+
     return -1;
+}
+
+struct uthread* uthread_self(){
+    return curr_thread;
 }

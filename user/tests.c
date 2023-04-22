@@ -4,9 +4,8 @@
 #include "user/user.h"
 void* thread_func(void* arg) {
     int* arg_ptr = (int*) arg;
-    int arg_val = *arg_ptr;
-    printf("Thread %d started\n", arg_val);
-    // uthread_exit();
+    printf("Thread %d started\n",  *arg_ptr);
+     uthread_exit();
     // printf("Thread %d resumed\n", arg_val);
     return (void*) 0;
 

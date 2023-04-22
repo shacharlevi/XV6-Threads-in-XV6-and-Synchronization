@@ -22,7 +22,7 @@ getcmd(char *buf, int nbuf)
   write(2, "$ ", 2);
       10:	4609                	li	a2,2
       12:	00001597          	auipc	a1,0x1
-      16:	62e58593          	addi	a1,a1,1582 # 1640 <uthread_start_all+0xc6>
+      16:	63e58593          	addi	a1,a1,1598 # 1650 <uthread_self+0x1a>
       1a:	4509                	li	a0,2
       1c:	00001097          	auipc	ra,0x1
       20:	de2080e7          	jalr	-542(ra) # dfe <write>
@@ -65,7 +65,7 @@ panic(char *s)
       5e:	862a                	mv	a2,a0
   fprintf(2, "%s\n", s);
       60:	00001597          	auipc	a1,0x1
-      64:	5e858593          	addi	a1,a1,1512 # 1648 <uthread_start_all+0xce>
+      64:	5f858593          	addi	a1,a1,1528 # 1658 <uthread_self+0x22>
       68:	4509                	li	a0,2
       6a:	00001097          	auipc	ra,0x1
       6e:	0be080e7          	jalr	190(ra) # 1128 <fprintf>
@@ -101,7 +101,7 @@ fork1(void)
       98:	8082                	ret
     panic("fork");
       9a:	00001517          	auipc	a0,0x1
-      9e:	5b650513          	addi	a0,a0,1462 # 1650 <uthread_start_all+0xd6>
+      9e:	5c650513          	addi	a0,a0,1478 # 1660 <uthread_self+0x2a>
       a2:	00000097          	auipc	ra,0x0
       a6:	fb4080e7          	jalr	-76(ra) # 56 <panic>
 
@@ -122,7 +122,7 @@ fork1(void)
       c0:	00056783          	lwu	a5,0(a0)
       c4:	078a                	slli	a5,a5,0x2
       c6:	00001717          	auipc	a4,0x1
-      ca:	68a70713          	addi	a4,a4,1674 # 1750 <uthread_start_all+0x1d6>
+      ca:	69a70713          	addi	a4,a4,1690 # 1760 <uthread_self+0x12a>
       ce:	97ba                	add	a5,a5,a4
       d0:	439c                	lw	a5,0(a5)
       d2:	97ba                	add	a5,a5,a4
@@ -133,7 +133,7 @@ fork1(void)
       dc:	d06080e7          	jalr	-762(ra) # dde <exit>
     panic("runcmd");
       e0:	00001517          	auipc	a0,0x1
-      e4:	57850513          	addi	a0,a0,1400 # 1658 <uthread_start_all+0xde>
+      e4:	58850513          	addi	a0,a0,1416 # 1668 <uthread_self+0x32>
       e8:	00000097          	auipc	ra,0x0
       ec:	f6e080e7          	jalr	-146(ra) # 56 <panic>
     if(ecmd->argv[0] == 0)
@@ -146,7 +146,7 @@ fork1(void)
     fprintf(2, "exec %s failed\n", ecmd->argv[0]);
      100:	6490                	ld	a2,8(s1)
      102:	00001597          	auipc	a1,0x1
-     106:	55e58593          	addi	a1,a1,1374 # 1660 <uthread_start_all+0xe6>
+     106:	56e58593          	addi	a1,a1,1390 # 1670 <uthread_self+0x3a>
      10a:	4509                	li	a0,2
      10c:	00001097          	auipc	ra,0x1
      110:	01c080e7          	jalr	28(ra) # 1128 <fprintf>
@@ -175,7 +175,7 @@ fork1(void)
       fprintf(2, "open %s failed\n", rcmd->file);
      14c:	6890                	ld	a2,16(s1)
      14e:	00001597          	auipc	a1,0x1
-     152:	52258593          	addi	a1,a1,1314 # 1670 <uthread_start_all+0xf6>
+     152:	53258593          	addi	a1,a1,1330 # 1680 <uthread_self+0x4a>
      156:	4509                	li	a0,2
      158:	00001097          	auipc	ra,0x1
      15c:	fd0080e7          	jalr	-48(ra) # 1128 <fprintf>
@@ -230,7 +230,7 @@ fork1(void)
      1e0:	ece080e7          	jalr	-306(ra) # aa <runcmd>
       panic("pipe");
      1e4:	00001517          	auipc	a0,0x1
-     1e8:	49c50513          	addi	a0,a0,1180 # 1680 <uthread_start_all+0x106>
+     1e8:	4ac50513          	addi	a0,a0,1196 # 1690 <uthread_self+0x5a>
      1ec:	00000097          	auipc	ra,0x0
      1f0:	e6a080e7          	jalr	-406(ra) # 56 <panic>
     if(fork1() == 0){
@@ -745,7 +745,7 @@ parseredirs(struct cmd *cmd, char **ps, char *es)
 
   while(peek(ps, es, "<>")){
      5a4:	00001b97          	auipc	s7,0x1
-     5a8:	104b8b93          	addi	s7,s7,260 # 16a8 <uthread_start_all+0x12e>
+     5a8:	114b8b93          	addi	s7,s7,276 # 16b8 <uthread_self+0x82>
     tok = gettoken(ps, es, 0, 0);
     if(gettoken(ps, es, &q, &eq) != 'a')
      5ac:	06100c13          	li	s8,97
@@ -756,7 +756,7 @@ parseredirs(struct cmd *cmd, char **ps, char *es)
      5b4:	a02d                	j	5de <parseredirs+0x5a>
       panic("missing file for redirection");
      5b6:	00001517          	auipc	a0,0x1
-     5ba:	0d250513          	addi	a0,a0,210 # 1688 <uthread_start_all+0x10e>
+     5ba:	0e250513          	addi	a0,a0,226 # 1698 <uthread_self+0x62>
      5be:	00000097          	auipc	ra,0x0
      5c2:	a98080e7          	jalr	-1384(ra) # 56 <panic>
     case '<':
@@ -874,7 +874,7 @@ parseexec(char **ps, char *es)
 
   if(peek(ps, es, "("))
      69e:	00001617          	auipc	a2,0x1
-     6a2:	01260613          	addi	a2,a2,18 # 16b0 <uthread_start_all+0x136>
+     6a2:	02260613          	addi	a2,a2,34 # 16c0 <uthread_self+0x8a>
      6a6:	00000097          	auipc	ra,0x0
      6aa:	e74080e7          	jalr	-396(ra) # 51a <peek>
      6ae:	e905                	bnez	a0,6de <parseexec+0x5e>
@@ -897,7 +897,7 @@ parseexec(char **ps, char *es)
   while(!peek(ps, es, "|)&;")){
      6ca:	008c0913          	addi	s2,s8,8
      6ce:	00001b17          	auipc	s6,0x1
-     6d2:	002b0b13          	addi	s6,s6,2 # 16d0 <uthread_start_all+0x156>
+     6d2:	012b0b13          	addi	s6,s6,18 # 16e0 <uthread_self+0xaa>
     if((tok=gettoken(ps, es, &q, &eq)) == 0)
       break;
     if(tok != 'a')
@@ -938,7 +938,7 @@ parseexec(char **ps, char *es)
      706:	8082                	ret
       panic("syntax");
      708:	00001517          	auipc	a0,0x1
-     70c:	fb050513          	addi	a0,a0,-80 # 16b8 <uthread_start_all+0x13e>
+     70c:	fc050513          	addi	a0,a0,-64 # 16c8 <uthread_self+0x92>
      710:	00000097          	auipc	ra,0x0
      714:	946080e7          	jalr	-1722(ra) # 56 <panic>
     ret = parseredirs(ret, ps, es);
@@ -978,7 +978,7 @@ parseexec(char **ps, char *es)
      766:	fb7999e3          	bne	s3,s7,718 <parseexec+0x98>
       panic("too many args");
      76a:	00001517          	auipc	a0,0x1
-     76e:	f5650513          	addi	a0,a0,-170 # 16c0 <uthread_start_all+0x146>
+     76e:	f6650513          	addi	a0,a0,-154 # 16d0 <uthread_self+0x9a>
      772:	00000097          	auipc	ra,0x0
      776:	8e4080e7          	jalr	-1820(ra) # 56 <panic>
   cmd->argv[argc] = 0;
@@ -1007,7 +1007,7 @@ parseexec(char **ps, char *es)
      7a2:	84aa                	mv	s1,a0
   if(peek(ps, es, "|")){
      7a4:	00001617          	auipc	a2,0x1
-     7a8:	f3460613          	addi	a2,a2,-204 # 16d8 <uthread_start_all+0x15e>
+     7a8:	f4460613          	addi	a2,a2,-188 # 16e8 <uthread_self+0xb2>
      7ac:	85ce                	mv	a1,s3
      7ae:	854a                	mv	a0,s2
      7b0:	00000097          	auipc	ra,0x0
@@ -1060,7 +1060,7 @@ parseexec(char **ps, char *es)
      812:	84aa                	mv	s1,a0
   while(peek(ps, es, "&")){
      814:	00001a17          	auipc	s4,0x1
-     818:	ecca0a13          	addi	s4,s4,-308 # 16e0 <uthread_start_all+0x166>
+     818:	edca0a13          	addi	s4,s4,-292 # 16f0 <uthread_self+0xba>
      81c:	a839                	j	83a <parseline+0x44>
     gettoken(ps, es, 0, 0);
      81e:	4681                	li	a3,0
@@ -1083,7 +1083,7 @@ parseexec(char **ps, char *es)
      848:	f979                	bnez	a0,81e <parseline+0x28>
   if(peek(ps, es, ";")){
      84a:	00001617          	auipc	a2,0x1
-     84e:	e9e60613          	addi	a2,a2,-354 # 16e8 <uthread_start_all+0x16e>
+     84e:	eae60613          	addi	a2,a2,-338 # 16f8 <uthread_self+0xc2>
      852:	85ce                	mv	a1,s3
      854:	854a                	mv	a0,s2
      856:	00000097          	auipc	ra,0x0
@@ -1132,7 +1132,7 @@ parseexec(char **ps, char *es)
      8ae:	892e                	mv	s2,a1
   if(!peek(ps, es, "("))
      8b0:	00001617          	auipc	a2,0x1
-     8b4:	e0060613          	addi	a2,a2,-512 # 16b0 <uthread_start_all+0x136>
+     8b4:	e1060613          	addi	a2,a2,-496 # 16c0 <uthread_self+0x8a>
      8b8:	00000097          	auipc	ra,0x0
      8bc:	c62080e7          	jalr	-926(ra) # 51a <peek>
      8c0:	c12d                	beqz	a0,922 <parseblock+0x84>
@@ -1151,7 +1151,7 @@ parseexec(char **ps, char *es)
      8de:	89aa                	mv	s3,a0
   if(!peek(ps, es, ")"))
      8e0:	00001617          	auipc	a2,0x1
-     8e4:	e2060613          	addi	a2,a2,-480 # 1700 <uthread_start_all+0x186>
+     8e4:	e3060613          	addi	a2,a2,-464 # 1710 <uthread_self+0xda>
      8e8:	85ca                	mv	a1,s2
      8ea:	8526                	mv	a0,s1
      8ec:	00000097          	auipc	ra,0x0
@@ -1180,12 +1180,12 @@ parseexec(char **ps, char *es)
      920:	8082                	ret
     panic("parseblock");
      922:	00001517          	auipc	a0,0x1
-     926:	dce50513          	addi	a0,a0,-562 # 16f0 <uthread_start_all+0x176>
+     926:	dde50513          	addi	a0,a0,-546 # 1700 <uthread_self+0xca>
      92a:	fffff097          	auipc	ra,0xfffff
      92e:	72c080e7          	jalr	1836(ra) # 56 <panic>
     panic("syntax - missing )");
      932:	00001517          	auipc	a0,0x1
-     936:	dd650513          	addi	a0,a0,-554 # 1708 <uthread_start_all+0x18e>
+     936:	de650513          	addi	a0,a0,-538 # 1718 <uthread_self+0xe2>
      93a:	fffff097          	auipc	ra,0xfffff
      93e:	71c080e7          	jalr	1820(ra) # 56 <panic>
 
@@ -1217,7 +1217,7 @@ nulterminate(struct cmd *cmd)
      958:	00056783          	lwu	a5,0(a0)
      95c:	078a                	slli	a5,a5,0x2
      95e:	00001717          	auipc	a4,0x1
-     962:	e0a70713          	addi	a4,a4,-502 # 1768 <uthread_start_all+0x1ee>
+     962:	e1a70713          	addi	a4,a4,-486 # 1778 <uthread_self+0x142>
      966:	97ba                	add	a5,a5,a4
      968:	439c                	lw	a5,0(a5)
      96a:	97ba                	add	a5,a5,a4
@@ -1310,7 +1310,7 @@ nulterminate(struct cmd *cmd)
      a08:	892a                	mv	s2,a0
   peek(&s, es, "");
      a0a:	00001617          	auipc	a2,0x1
-     a0e:	d1660613          	addi	a2,a2,-746 # 1720 <uthread_start_all+0x1a6>
+     a0e:	d2660613          	addi	a2,a2,-730 # 1730 <uthread_self+0xfa>
      a12:	85a6                	mv	a1,s1
      a14:	fd840513          	addi	a0,s0,-40
      a18:	00000097          	auipc	ra,0x0
@@ -1332,13 +1332,13 @@ nulterminate(struct cmd *cmd)
      a3e:	8082                	ret
     fprintf(2, "leftovers: %s\n", s);
      a40:	00001597          	auipc	a1,0x1
-     a44:	ce858593          	addi	a1,a1,-792 # 1728 <uthread_start_all+0x1ae>
+     a44:	cf858593          	addi	a1,a1,-776 # 1738 <uthread_self+0x102>
      a48:	4509                	li	a0,2
      a4a:	00000097          	auipc	ra,0x0
      a4e:	6de080e7          	jalr	1758(ra) # 1128 <fprintf>
     panic("syntax");
      a52:	00001517          	auipc	a0,0x1
-     a56:	c6650513          	addi	a0,a0,-922 # 16b8 <uthread_start_all+0x13e>
+     a56:	c7650513          	addi	a0,a0,-906 # 16c8 <uthread_self+0x92>
      a5a:	fffff097          	auipc	ra,0xfffff
      a5e:	5fc080e7          	jalr	1532(ra) # 56 <panic>
 
@@ -1355,7 +1355,7 @@ nulterminate(struct cmd *cmd)
      a72:	0080                	addi	s0,sp,64
   while((fd = open("console", O_RDWR)) >= 0){
      a74:	00001497          	auipc	s1,0x1
-     a78:	cc448493          	addi	s1,s1,-828 # 1738 <uthread_start_all+0x1be>
+     a78:	cd448493          	addi	s1,s1,-812 # 1748 <uthread_self+0x112>
      a7c:	4589                	li	a1,2
      a7e:	8526                	mv	a0,s1
      a80:	00000097          	auipc	ra,0x0
@@ -1378,7 +1378,7 @@ nulterminate(struct cmd *cmd)
      aae:	589a0a13          	addi	s4,s4,1417 # 2033 <buf.0+0x3>
         fprintf(2, "cannot cd %s\n", buf+3);
      ab2:	00001a97          	auipc	s5,0x1
-     ab6:	c8ea8a93          	addi	s5,s5,-882 # 1740 <uthread_start_all+0x1c6>
+     ab6:	c9ea8a93          	addi	s5,s5,-866 # 1750 <uthread_self+0x11a>
      aba:	a819                	j	ad0 <main+0x6e>
     if(fork1() == 0)
      abc:	fffff097          	auipc	ra,0xfffff
@@ -2147,7 +2147,7 @@ printint(int fd, int xx, int base, int sgn)
     buf[i++] = digits[x % base];
      ec0:	2601                	sext.w	a2,a2
      ec2:	00001517          	auipc	a0,0x1
-     ec6:	8c650513          	addi	a0,a0,-1850 # 1788 <digits>
+     ec6:	8d650513          	addi	a0,a0,-1834 # 1798 <digits>
      eca:	883a                	mv	a6,a4
      ecc:	2705                	addiw	a4,a4,1
      ece:	02c5f7bb          	remuw	a5,a1,a2
@@ -2256,8 +2256,8 @@ vprintf(int fd, const char *fmt, va_list ap)
       } else if(c == 'p') {
      f8a:	07000d93          	li	s11,112
     putc(fd, digits[x >> (sizeof(uint64) * 8 - 4)]);
-     f8e:	00000b97          	auipc	s7,0x0
-     f92:	7fab8b93          	addi	s7,s7,2042 # 1788 <digits>
+     f8e:	00001b97          	auipc	s7,0x1
+     f92:	80ab8b93          	addi	s7,s7,-2038 # 1798 <digits>
      f96:	a839                	j	fb4 <vprintf+0x6a>
         putc(fd, c);
      f98:	85ca                	mv	a1,s2
@@ -2411,7 +2411,7 @@ vprintf(int fd, const char *fmt, va_list ap)
     10cc:	bdf9                	j	faa <vprintf+0x60>
           s = "(null)";
     10ce:	00000917          	auipc	s2,0x0
-    10d2:	6b290913          	addi	s2,s2,1714 # 1780 <uthread_start_all+0x206>
+    10d2:	6c290913          	addi	s2,s2,1730 # 1790 <uthread_self+0x15a>
         while(*s != 0){
     10d6:	02800593          	li	a1,40
     10da:	bff1                	j	10b6 <vprintf+0x16c>
@@ -3145,7 +3145,9 @@ int uthread_start_all(){
     161c:	a9050513          	addi	a0,a0,-1392 # 20a8 <garbageContext>
     1620:	00000097          	auipc	ra,0x0
     1624:	cd8080e7          	jalr	-808(ra) # 12f8 <uswtch>
+
     return -1;
+}
     1628:	557d                	li	a0,-1
     162a:	60a2                	ld	ra,8(sp)
     162c:	6402                	ld	s0,0(sp)
@@ -3153,3 +3155,16 @@ int uthread_start_all(){
     1630:	8082                	ret
     1632:	557d                	li	a0,-1
     1634:	8082                	ret
+
+0000000000001636 <uthread_self>:
+
+struct uthread* uthread_self(){
+    1636:	1141                	addi	sp,sp,-16
+    1638:	e422                	sd	s0,8(sp)
+    163a:	0800                	addi	s0,sp,16
+    return curr_thread;
+    163c:	00001517          	auipc	a0,0x1
+    1640:	9dc53503          	ld	a0,-1572(a0) # 2018 <curr_thread>
+    1644:	6422                	ld	s0,8(sp)
+    1646:	0141                	addi	sp,sp,16
+    1648:	8082                	ret
