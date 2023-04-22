@@ -46,7 +46,7 @@ main(int argc, char *argv[])
   3c:	a80d                	j	6e <main+0x6e>
     fprintf(2, "Usage: mkdir files...\n");
   3e:	00001597          	auipc	a1,0x1
-  42:	9f258593          	addi	a1,a1,-1550 # a30 <uthread_yield+0xfc>
+  42:	a6258593          	addi	a1,a1,-1438 # aa0 <uthread_get_priority+0x1e>
   46:	4509                	li	a0,2
   48:	00000097          	auipc	ra,0x0
   4c:	602080e7          	jalr	1538(ra) # 64a <fprintf>
@@ -57,7 +57,7 @@ main(int argc, char *argv[])
       fprintf(2, "mkdir: %s failed to create\n", argv[i]);
   5a:	6090                	ld	a2,0(s1)
   5c:	00001597          	auipc	a1,0x1
-  60:	9ec58593          	addi	a1,a1,-1556 # a48 <uthread_yield+0x114>
+  60:	a5c58593          	addi	a1,a1,-1444 # ab8 <uthread_get_priority+0x36>
   64:	4509                	li	a0,2
   66:	00000097          	auipc	ra,0x0
   6a:	5e4080e7          	jalr	1508(ra) # 64a <fprintf>
@@ -782,7 +782,7 @@ printint(int fd, int xx, int base, int sgn)
     buf[i++] = digits[x % base];
  3e2:	2601                	sext.w	a2,a2
  3e4:	00000517          	auipc	a0,0x0
- 3e8:	68c50513          	addi	a0,a0,1676 # a70 <digits>
+ 3e8:	6fc50513          	addi	a0,a0,1788 # ae0 <digits>
  3ec:	883a                	mv	a6,a4
  3ee:	2705                	addiw	a4,a4,1
  3f0:	02c5f7bb          	remuw	a5,a1,a2
@@ -892,7 +892,7 @@ vprintf(int fd, const char *fmt, va_list ap)
  4ac:	07000d93          	li	s11,112
     putc(fd, digits[x >> (sizeof(uint64) * 8 - 4)]);
  4b0:	00000b97          	auipc	s7,0x0
- 4b4:	5c0b8b93          	addi	s7,s7,1472 # a70 <digits>
+ 4b4:	630b8b93          	addi	s7,s7,1584 # ae0 <digits>
  4b8:	a839                	j	4d6 <vprintf+0x6a>
         putc(fd, c);
  4ba:	85ca                	mv	a1,s2
@@ -1046,7 +1046,7 @@ vprintf(int fd, const char *fmt, va_list ap)
  5ee:	bdf9                	j	4cc <vprintf+0x60>
           s = "(null)";
  5f0:	00000917          	auipc	s2,0x0
- 5f4:	47890913          	addi	s2,s2,1144 # a68 <uthread_yield+0x134>
+ 5f4:	4e890913          	addi	s2,s2,1256 # ad8 <uthread_get_priority+0x56>
         while(*s != 0){
  5f8:	02800593          	li	a1,40
  5fc:	bff1                	j	5d8 <vprintf+0x16c>
@@ -1294,7 +1294,7 @@ malloc(uint nbytes)
  78c:	a88d                	j	7fe <malloc+0xc8>
     base.s.ptr = freep = prevp = &base;
  78e:	00001797          	auipc	a5,0x1
- 792:	89278793          	addi	a5,a5,-1902 # 1020 <base>
+ 792:	88278793          	addi	a5,a5,-1918 # 1010 <base>
  796:	00001717          	auipc	a4,0x1
  79a:	86f73523          	sd	a5,-1942(a4) # 1000 <freep>
  79e:	e39c                	sd	a5,0(a5)
@@ -1398,203 +1398,292 @@ malloc(uint nbytes)
  882:	8082                	ret
 
 0000000000000884 <uthread_exit>:
+    curr_thread = next_thread;
     uswtch(curr_context, next_context);
-         printf("after switch thread with ID: %d and prior:%d\n", curr_thread->id,curr_thread->priority);
 
 }
 
 void uthread_exit(){
  884:	1141                	addi	sp,sp,-16
- 886:	e422                	sd	s0,8(sp)
- 888:	0800                	addi	s0,sp,16
-
- 88a:	6422                	ld	s0,8(sp)
- 88c:	0141                	addi	sp,sp,16
- 88e:	8082                	ret
-
-0000000000000890 <uthread_create>:
-int uthread_create(void (*start_func)(), enum sched_priority priority) {
- 890:	862e                	mv	a2,a1
-    for (i = 0; i < MAX_UTHREADS; i++) {
- 892:	00001717          	auipc	a4,0x1
- 896:	74270713          	addi	a4,a4,1858 # 1fd4 <uthreads_arr+0xfa4>
- 89a:	4781                	li	a5,0
- 89c:	6805                	lui	a6,0x1
- 89e:	02080813          	addi	a6,a6,32 # 1020 <base>
- 8a2:	4591                	li	a1,4
-        if (uthreads_arr[i].state == FREE) {
- 8a4:	4314                	lw	a3,0(a4)
- 8a6:	c699                	beqz	a3,8b4 <uthread_create+0x24>
-    for (i = 0; i < MAX_UTHREADS; i++) {
- 8a8:	2785                	addiw	a5,a5,1
- 8aa:	9742                	add	a4,a4,a6
- 8ac:	feb79ce3          	bne	a5,a1,8a4 <uthread_create+0x14>
-        return -1;
- 8b0:	557d                	li	a0,-1
- 8b2:	8082                	ret
-            curr_thread = &uthreads_arr[i];
- 8b4:	00779713          	slli	a4,a5,0x7
- 8b8:	973e                	add	a4,a4,a5
- 8ba:	0716                	slli	a4,a4,0x5
- 8bc:	00000697          	auipc	a3,0x0
- 8c0:	77468693          	addi	a3,a3,1908 # 1030 <uthreads_arr>
- 8c4:	9736                	add	a4,a4,a3
- 8c6:	00000697          	auipc	a3,0x0
- 8ca:	74e6b123          	sd	a4,1858(a3) # 1008 <curr_thread>
-    if (i >= MAX_UTHREADS) {
- 8ce:	468d                	li	a3,3
- 8d0:	06f6c063          	blt	a3,a5,930 <uthread_create+0xa0>
-int uthread_create(void (*start_func)(), enum sched_priority priority) {
- 8d4:	1141                	addi	sp,sp,-16
- 8d6:	e406                	sd	ra,8(sp)
- 8d8:	e022                	sd	s0,0(sp)
- 8da:	0800                	addi	s0,sp,16
-    curr_thread->id = next_tid++; 
- 8dc:	00000797          	auipc	a5,0x0
- 8e0:	73478793          	addi	a5,a5,1844 # 1010 <next_tid>
- 8e4:	438c                	lw	a1,0(a5)
- 8e6:	0015869b          	addiw	a3,a1,1
- 8ea:	c394                	sw	a3,0(a5)
- 8ec:	c30c                	sw	a1,0(a4)
-    curr_thread->priority = priority;
- 8ee:	6685                	lui	a3,0x1
- 8f0:	00d707b3          	add	a5,a4,a3
- 8f4:	cf90                	sw	a2,24(a5)
-    curr_thread->context.ra = (uint64) start_func;
- 8f6:	faa7b423          	sd	a0,-88(a5)
-    curr_thread->context.sp = (uint64) &curr_thread->ustack[STACK_SIZE];
- 8fa:	fa468693          	addi	a3,a3,-92 # fa4 <digits+0x534>
- 8fe:	9736                	add	a4,a4,a3
- 900:	fae7b823          	sd	a4,-80(a5)
-    curr_thread->ustack[STACK_SIZE - 1] = (uint64) uthread_exit; // Return address to uthread_exit
- 904:	00000717          	auipc	a4,0x0
- 908:	f8070713          	addi	a4,a4,-128 # 884 <uthread_exit>
- 90c:	fae781a3          	sb	a4,-93(a5)
-    curr_thread->state = RUNNABLE;
- 910:	4709                	li	a4,2
- 912:	fae7a223          	sw	a4,-92(a5)
- printf("Created thread with ID: %d and prior:%d\n", curr_thread->id,curr_thread->priority);
- 916:	00000517          	auipc	a0,0x0
- 91a:	17250513          	addi	a0,a0,370 # a88 <digits+0x18>
- 91e:	00000097          	auipc	ra,0x0
- 922:	d5a080e7          	jalr	-678(ra) # 678 <printf>
-     return 0;
- 926:	4501                	li	a0,0
-}
- 928:	60a2                	ld	ra,8(sp)
- 92a:	6402                	ld	s0,0(sp)
- 92c:	0141                	addi	sp,sp,16
- 92e:	8082                	ret
-        return -1;
- 930:	557d                	li	a0,-1
-}
- 932:	8082                	ret
-
-0000000000000934 <uthread_yield>:
-void uthread_yield() {
- 934:	7179                	addi	sp,sp,-48
- 936:	f406                	sd	ra,40(sp)
- 938:	f022                	sd	s0,32(sp)
- 93a:	ec26                	sd	s1,24(sp)
- 93c:	e84a                	sd	s2,16(sp)
- 93e:	e44e                	sd	s3,8(sp)
- 940:	1800                	addi	s0,sp,48
-    for (int i = curr_thread->id+1; count<MAX_UTHREADS; count++, i=(i+1)%MAX_UTHREADS) {
- 942:	00000817          	auipc	a6,0x0
- 946:	6c683803          	ld	a6,1734(a6) # 1008 <curr_thread>
- 94a:	00082583          	lw	a1,0(a6)
- 94e:	0015879b          	addiw	a5,a1,1
- 952:	4691                	li	a3,4
+ 886:	e406                	sd	ra,8(sp)
+ 888:	e022                	sd	s0,0(sp)
+ 88a:	0800                	addi	s0,sp,16
+    // Change the state of the current thread to FREE
+    curr_thread->state = FREE;
+ 88c:	00000517          	auipc	a0,0x0
+ 890:	77c53503          	ld	a0,1916(a0) # 1008 <curr_thread>
+ 894:	6785                	lui	a5,0x1
+ 896:	97aa                	add	a5,a5,a0
+ 898:	fa07a223          	sw	zero,-92(a5) # fa4 <digits+0x4c4>
+    // Find another runnable thread to switch to (make sure its not the current_thread)
+    struct uthread *next_thread = (struct uthread *) 1;
     enum sched_priority max_priority = LOW;
- 954:	4301                	li	t1,0
-    struct uthread *next_thread = NULL;
- 956:	4481                	li	s1,0
+    int count=0;
+    for (int i = curr_thread->id+1; count<MAX_UTHREADS;  count++,i=(i+1)%MAX_UTHREADS) {
+ 89c:	411c                	lw	a5,0(a0)
+ 89e:	2785                	addiw	a5,a5,1
+ 8a0:	4691                	li	a3,4
+    enum sched_priority max_priority = LOW;
+ 8a2:	4301                	li	t1,0
+    struct uthread *next_thread = (struct uthread *) 1;
+ 8a4:	4585                	li	a1,1
+         
         if (uthreads_arr[i].state == RUNNABLE &&
- 958:	00000617          	auipc	a2,0x0
- 95c:	6d860613          	addi	a2,a2,1752 # 1030 <uthreads_arr>
- 960:	6505                	lui	a0,0x1
- 962:	4889                	li	a7,2
- 964:	a819                	j	97a <uthread_yield+0x46>
-    for (int i = curr_thread->id+1; count<MAX_UTHREADS; count++, i=(i+1)%MAX_UTHREADS) {
- 966:	2785                	addiw	a5,a5,1
- 968:	41f7d71b          	sraiw	a4,a5,0x1f
- 96c:	01e7571b          	srliw	a4,a4,0x1e
- 970:	9fb9                	addw	a5,a5,a4
- 972:	8b8d                	andi	a5,a5,3
- 974:	9f99                	subw	a5,a5,a4
- 976:	36fd                	addiw	a3,a3,-1
- 978:	ca9d                	beqz	a3,9ae <uthread_yield+0x7a>
+ 8a6:	00000617          	auipc	a2,0x0
+ 8aa:	77a60613          	addi	a2,a2,1914 # 1020 <uthreads_arr>
+ 8ae:	6805                	lui	a6,0x1
+ 8b0:	4889                	li	a7,2
+ 8b2:	a819                	j	8c8 <uthread_exit+0x44>
+    for (int i = curr_thread->id+1; count<MAX_UTHREADS;  count++,i=(i+1)%MAX_UTHREADS) {
+ 8b4:	2785                	addiw	a5,a5,1
+ 8b6:	41f7d71b          	sraiw	a4,a5,0x1f
+ 8ba:	01e7571b          	srliw	a4,a4,0x1e
+ 8be:	9fb9                	addw	a5,a5,a4
+ 8c0:	8b8d                	andi	a5,a5,3
+ 8c2:	9f99                	subw	a5,a5,a4
+ 8c4:	36fd                	addiw	a3,a3,-1
+ 8c6:	ca9d                	beqz	a3,8fc <uthread_exit+0x78>
         if (uthreads_arr[i].state == RUNNABLE &&
- 97a:	00779713          	slli	a4,a5,0x7
- 97e:	973e                	add	a4,a4,a5
- 980:	0716                	slli	a4,a4,0x5
- 982:	9732                	add	a4,a4,a2
- 984:	972a                	add	a4,a4,a0
- 986:	fa472703          	lw	a4,-92(a4)
- 98a:	fd171ee3          	bne	a4,a7,966 <uthread_yield+0x32>
+ 8c8:	00779713          	slli	a4,a5,0x7
+ 8cc:	973e                	add	a4,a4,a5
+ 8ce:	0716                	slli	a4,a4,0x5
+ 8d0:	9732                	add	a4,a4,a2
+ 8d2:	9742                	add	a4,a4,a6
+ 8d4:	fa472703          	lw	a4,-92(a4)
+ 8d8:	fd171ee3          	bne	a4,a7,8b4 <uthread_exit+0x30>
             uthreads_arr[i].priority > max_priority) {
- 98e:	00779713          	slli	a4,a5,0x7
- 992:	973e                	add	a4,a4,a5
- 994:	0716                	slli	a4,a4,0x5
- 996:	9732                	add	a4,a4,a2
- 998:	972a                	add	a4,a4,a0
- 99a:	4f18                	lw	a4,24(a4)
+ 8dc:	00779713          	slli	a4,a5,0x7
+ 8e0:	973e                	add	a4,a4,a5
+ 8e2:	0716                	slli	a4,a4,0x5
+ 8e4:	9732                	add	a4,a4,a2
+ 8e6:	9742                	add	a4,a4,a6
+ 8e8:	4f18                	lw	a4,24(a4)
         if (uthreads_arr[i].state == RUNNABLE &&
- 99c:	fce375e3          	bgeu	t1,a4,966 <uthread_yield+0x32>
+ 8ea:	fce375e3          	bgeu	t1,a4,8b4 <uthread_exit+0x30>
             next_thread = &uthreads_arr[i];
- 9a0:	00779493          	slli	s1,a5,0x7
- 9a4:	94be                	add	s1,s1,a5
- 9a6:	0496                	slli	s1,s1,0x5
- 9a8:	94b2                	add	s1,s1,a2
+ 8ee:	00779593          	slli	a1,a5,0x7
+ 8f2:	95be                	add	a1,a1,a5
+ 8f4:	0596                	slli	a1,a1,0x5
+ 8f6:	95b2                	add	a1,a1,a2
             max_priority = uthreads_arr[i].priority;
- 9aa:	833a                	mv	t1,a4
- 9ac:	bf6d                	j	966 <uthread_yield+0x32>
-     printf("before switch thread with ID: %d and prior:%d\n", curr_thread->id,curr_thread->priority);
- 9ae:	6785                	lui	a5,0x1
- 9b0:	983e                	add	a6,a6,a5
- 9b2:	01882603          	lw	a2,24(a6)
- 9b6:	00000517          	auipc	a0,0x0
- 9ba:	10250513          	addi	a0,a0,258 # ab8 <digits+0x48>
- 9be:	00000097          	auipc	ra,0x0
- 9c2:	cba080e7          	jalr	-838(ra) # 678 <printf>
-    if (next_thread == NULL) {
- 9c6:	c8b9                	beqz	s1,a1c <uthread_yield+0xe8>
+ 8f8:	833a                	mv	t1,a4
+ 8fa:	bf6d                	j	8b4 <uthread_exit+0x30>
+        }
+    }
+    if (next_thread == (struct uthread *) 1) {
+ 8fc:	4785                	li	a5,1
+ 8fe:	02f58863          	beq	a1,a5,92e <uthread_exit+0xaa>
+        exit(0);  // Exit the process if there are no more runnable threads
+    }
+    // Switch to the next thread
     struct context *curr_context = &curr_thread->context;
- 9c8:	00000997          	auipc	s3,0x0
- 9cc:	64098993          	addi	s3,s3,1600 # 1008 <curr_thread>
- 9d0:	0009b503          	ld	a0,0(s3)
-    curr_thread->state = RUNNABLE;
- 9d4:	6905                	lui	s2,0x1
- 9d6:	012507b3          	add	a5,a0,s2
- 9da:	4709                	li	a4,2
- 9dc:	fae7a223          	sw	a4,-92(a5) # fa4 <digits+0x534>
-    next_thread->state = RUNNING;
- 9e0:	012487b3          	add	a5,s1,s2
- 9e4:	4705                	li	a4,1
- 9e6:	fae7a223          	sw	a4,-92(a5)
-    curr_thread = next_thread;
- 9ea:	0099b023          	sd	s1,0(s3)
     struct context *next_context = &next_thread->context;
- 9ee:	fa890793          	addi	a5,s2,-88 # fa8 <digits+0x538>
+    next_thread->state = RUNNING;
+ 902:	6785                	lui	a5,0x1
+ 904:	00f58733          	add	a4,a1,a5
+ 908:	4685                	li	a3,1
+ 90a:	fad72223          	sw	a3,-92(a4)
+    curr_thread = next_thread;
+ 90e:	00000717          	auipc	a4,0x0
+ 912:	6eb73d23          	sd	a1,1786(a4) # 1008 <curr_thread>
+    struct context *next_context = &next_thread->context;
+ 916:	fa878793          	addi	a5,a5,-88 # fa8 <digits+0x4c8>
     uswtch(curr_context, next_context);
- 9f2:	00f485b3          	add	a1,s1,a5
- 9f6:	953e                	add	a0,a0,a5
- 9f8:	00000097          	auipc	ra,0x0
- 9fc:	e22080e7          	jalr	-478(ra) # 81a <uswtch>
-         printf("after switch thread with ID: %d and prior:%d\n", curr_thread->id,curr_thread->priority);
- a00:	0009b783          	ld	a5,0(s3)
- a04:	993e                	add	s2,s2,a5
- a06:	01892603          	lw	a2,24(s2)
- a0a:	438c                	lw	a1,0(a5)
- a0c:	00000517          	auipc	a0,0x0
- a10:	0dc50513          	addi	a0,a0,220 # ae8 <digits+0x78>
- a14:	00000097          	auipc	ra,0x0
- a18:	c64080e7          	jalr	-924(ra) # 678 <printf>
+ 91a:	95be                	add	a1,a1,a5
+ 91c:	953e                	add	a0,a0,a5
+ 91e:	00000097          	auipc	ra,0x0
+ 922:	efc080e7          	jalr	-260(ra) # 81a <uswtch>
 }
- a1c:	70a2                	ld	ra,40(sp)
- a1e:	7402                	ld	s0,32(sp)
- a20:	64e2                	ld	s1,24(sp)
- a22:	6942                	ld	s2,16(sp)
- a24:	69a2                	ld	s3,8(sp)
- a26:	6145                	addi	sp,sp,48
- a28:	8082                	ret
+ 926:	60a2                	ld	ra,8(sp)
+ 928:	6402                	ld	s0,0(sp)
+ 92a:	0141                	addi	sp,sp,16
+ 92c:	8082                	ret
+        exit(0);  // Exit the process if there are no more runnable threads
+ 92e:	4501                	li	a0,0
+ 930:	00000097          	auipc	ra,0x0
+ 934:	9d0080e7          	jalr	-1584(ra) # 300 <exit>
+
+0000000000000938 <uthread_create>:
+int uthread_create(void (*start_func)(), enum sched_priority priority) {
+ 938:	1141                	addi	sp,sp,-16
+ 93a:	e422                	sd	s0,8(sp)
+ 93c:	0800                	addi	s0,sp,16
+    for (i = 0; i < MAX_UTHREADS; i++) {
+ 93e:	00001717          	auipc	a4,0x1
+ 942:	68670713          	addi	a4,a4,1670 # 1fc4 <uthreads_arr+0xfa4>
+ 946:	4781                	li	a5,0
+ 948:	6605                	lui	a2,0x1
+ 94a:	02060613          	addi	a2,a2,32 # 1020 <uthreads_arr>
+ 94e:	4811                	li	a6,4
+        if (uthreads_arr[i].state == FREE) {
+ 950:	4314                	lw	a3,0(a4)
+ 952:	c699                	beqz	a3,960 <uthread_create+0x28>
+    for (i = 0; i < MAX_UTHREADS; i++) {
+ 954:	2785                	addiw	a5,a5,1
+ 956:	9732                	add	a4,a4,a2
+ 958:	ff079ce3          	bne	a5,a6,950 <uthread_create+0x18>
+        return -1;
+ 95c:	557d                	li	a0,-1
+ 95e:	a0b9                	j	9ac <uthread_create+0x74>
+            curr_thread = &uthreads_arr[i];
+ 960:	00779713          	slli	a4,a5,0x7
+ 964:	973e                	add	a4,a4,a5
+ 966:	0716                	slli	a4,a4,0x5
+ 968:	00000697          	auipc	a3,0x0
+ 96c:	6b868693          	addi	a3,a3,1720 # 1020 <uthreads_arr>
+ 970:	9736                	add	a4,a4,a3
+ 972:	00000697          	auipc	a3,0x0
+ 976:	68e6bb23          	sd	a4,1686(a3) # 1008 <curr_thread>
+    if (i >= MAX_UTHREADS) {
+ 97a:	468d                	li	a3,3
+ 97c:	02f6cb63          	blt	a3,a5,9b2 <uthread_create+0x7a>
+    curr_thread->id = i; 
+ 980:	c31c                	sw	a5,0(a4)
+    curr_thread->priority = priority;
+ 982:	6685                	lui	a3,0x1
+ 984:	00d707b3          	add	a5,a4,a3
+ 988:	cf8c                	sw	a1,24(a5)
+    curr_thread->context.ra = (uint64) start_func;
+ 98a:	faa7b423          	sd	a0,-88(a5)
+    curr_thread->context.sp = (uint64) &curr_thread->ustack[STACK_SIZE];
+ 98e:	fa468693          	addi	a3,a3,-92 # fa4 <digits+0x4c4>
+ 992:	9736                	add	a4,a4,a3
+ 994:	fae7b823          	sd	a4,-80(a5)
+    curr_thread->ustack[STACK_SIZE - 1] = (uint64) uthread_exit; // Return address to uthread_exit
+ 998:	00000717          	auipc	a4,0x0
+ 99c:	eec70713          	addi	a4,a4,-276 # 884 <uthread_exit>
+ 9a0:	fae781a3          	sb	a4,-93(a5)
+    curr_thread->state = RUNNABLE;
+ 9a4:	4709                	li	a4,2
+ 9a6:	fae7a223          	sw	a4,-92(a5)
+     return 0;
+ 9aa:	4501                	li	a0,0
+}
+ 9ac:	6422                	ld	s0,8(sp)
+ 9ae:	0141                	addi	sp,sp,16
+ 9b0:	8082                	ret
+        return -1;
+ 9b2:	557d                	li	a0,-1
+ 9b4:	bfe5                	j	9ac <uthread_create+0x74>
+
+00000000000009b6 <uthread_yield>:
+    for (int i = curr_thread->id+1; count<MAX_UTHREADS; count++, i=(i+1)%MAX_UTHREADS) {
+ 9b6:	00000517          	auipc	a0,0x0
+ 9ba:	65253503          	ld	a0,1618(a0) # 1008 <curr_thread>
+ 9be:	411c                	lw	a5,0(a0)
+ 9c0:	2785                	addiw	a5,a5,1
+ 9c2:	4691                	li	a3,4
+    enum sched_priority max_priority = LOW;
+ 9c4:	4301                	li	t1,0
+    struct uthread *next_thread = (struct uthread *) 1;
+ 9c6:	4585                	li	a1,1
+        if (uthreads_arr[i].state == RUNNABLE &&
+ 9c8:	00000617          	auipc	a2,0x0
+ 9cc:	65860613          	addi	a2,a2,1624 # 1020 <uthreads_arr>
+ 9d0:	6805                	lui	a6,0x1
+ 9d2:	4889                	li	a7,2
+ 9d4:	a819                	j	9ea <uthread_yield+0x34>
+    for (int i = curr_thread->id+1; count<MAX_UTHREADS; count++, i=(i+1)%MAX_UTHREADS) {
+ 9d6:	2785                	addiw	a5,a5,1
+ 9d8:	41f7d71b          	sraiw	a4,a5,0x1f
+ 9dc:	01e7571b          	srliw	a4,a4,0x1e
+ 9e0:	9fb9                	addw	a5,a5,a4
+ 9e2:	8b8d                	andi	a5,a5,3
+ 9e4:	9f99                	subw	a5,a5,a4
+ 9e6:	36fd                	addiw	a3,a3,-1
+ 9e8:	ca9d                	beqz	a3,a1e <uthread_yield+0x68>
+        if (uthreads_arr[i].state == RUNNABLE &&
+ 9ea:	00779713          	slli	a4,a5,0x7
+ 9ee:	973e                	add	a4,a4,a5
+ 9f0:	0716                	slli	a4,a4,0x5
+ 9f2:	9732                	add	a4,a4,a2
+ 9f4:	9742                	add	a4,a4,a6
+ 9f6:	fa472703          	lw	a4,-92(a4)
+ 9fa:	fd171ee3          	bne	a4,a7,9d6 <uthread_yield+0x20>
+            uthreads_arr[i].priority > max_priority) {
+ 9fe:	00779713          	slli	a4,a5,0x7
+ a02:	973e                	add	a4,a4,a5
+ a04:	0716                	slli	a4,a4,0x5
+ a06:	9732                	add	a4,a4,a2
+ a08:	9742                	add	a4,a4,a6
+ a0a:	4f18                	lw	a4,24(a4)
+        if (uthreads_arr[i].state == RUNNABLE &&
+ a0c:	fce375e3          	bgeu	t1,a4,9d6 <uthread_yield+0x20>
+            next_thread = &uthreads_arr[i];
+ a10:	00779593          	slli	a1,a5,0x7
+ a14:	95be                	add	a1,a1,a5
+ a16:	0596                	slli	a1,a1,0x5
+ a18:	95b2                	add	a1,a1,a2
+            max_priority = uthreads_arr[i].priority;
+ a1a:	833a                	mv	t1,a4
+ a1c:	bf6d                	j	9d6 <uthread_yield+0x20>
+    if (next_thread == (struct uthread *) 1) {
+ a1e:	4785                	li	a5,1
+ a20:	04f58163          	beq	a1,a5,a62 <uthread_yield+0xac>
+void uthread_yield() {
+ a24:	1141                	addi	sp,sp,-16
+ a26:	e406                	sd	ra,8(sp)
+ a28:	e022                	sd	s0,0(sp)
+ a2a:	0800                	addi	s0,sp,16
+    curr_thread->state = RUNNABLE;
+ a2c:	6785                	lui	a5,0x1
+ a2e:	00f50733          	add	a4,a0,a5
+ a32:	4689                	li	a3,2
+ a34:	fad72223          	sw	a3,-92(a4)
+    next_thread->state = RUNNING;
+ a38:	00f58733          	add	a4,a1,a5
+ a3c:	4685                	li	a3,1
+ a3e:	fad72223          	sw	a3,-92(a4)
+    curr_thread = next_thread;
+ a42:	00000717          	auipc	a4,0x0
+ a46:	5cb73323          	sd	a1,1478(a4) # 1008 <curr_thread>
+    struct context *next_context = &next_thread->context;
+ a4a:	fa878793          	addi	a5,a5,-88 # fa8 <digits+0x4c8>
+    uswtch(curr_context, next_context);
+ a4e:	95be                	add	a1,a1,a5
+ a50:	953e                	add	a0,a0,a5
+ a52:	00000097          	auipc	ra,0x0
+ a56:	dc8080e7          	jalr	-568(ra) # 81a <uswtch>
+}
+ a5a:	60a2                	ld	ra,8(sp)
+ a5c:	6402                	ld	s0,0(sp)
+ a5e:	0141                	addi	sp,sp,16
+ a60:	8082                	ret
+ a62:	8082                	ret
+
+0000000000000a64 <uthread_set_priority>:
+
+enum sched_priority uthread_set_priority(enum sched_priority priority){
+ a64:	1141                	addi	sp,sp,-16
+ a66:	e422                	sd	s0,8(sp)
+ a68:	0800                	addi	s0,sp,16
+    enum sched_priority to_return =curr_thread->priority;
+ a6a:	00000797          	auipc	a5,0x0
+ a6e:	59e7b783          	ld	a5,1438(a5) # 1008 <curr_thread>
+ a72:	6705                	lui	a4,0x1
+ a74:	97ba                	add	a5,a5,a4
+ a76:	4f98                	lw	a4,24(a5)
+    curr_thread->priority=priority;
+ a78:	cf88                	sw	a0,24(a5)
+    return to_return;
+}
+ a7a:	853a                	mv	a0,a4
+ a7c:	6422                	ld	s0,8(sp)
+ a7e:	0141                	addi	sp,sp,16
+ a80:	8082                	ret
+
+0000000000000a82 <uthread_get_priority>:
+
+enum sched_priority uthread_get_priority(){
+ a82:	1141                	addi	sp,sp,-16
+ a84:	e422                	sd	s0,8(sp)
+ a86:	0800                	addi	s0,sp,16
+    return curr_thread->priority;
+ a88:	00000797          	auipc	a5,0x0
+ a8c:	5807b783          	ld	a5,1408(a5) # 1008 <curr_thread>
+ a90:	6705                	lui	a4,0x1
+ a92:	97ba                	add	a5,a5,a4
+ a94:	4f88                	lw	a0,24(a5)
+ a96:	6422                	ld	s0,8(sp)
+ a98:	0141                	addi	sp,sp,16
+ a9a:	8082                	ret
