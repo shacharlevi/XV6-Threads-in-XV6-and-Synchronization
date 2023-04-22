@@ -8,6 +8,8 @@ struct spinlock;
 struct sleeplock;
 struct stat;
 struct superblock;
+struct kthread;
+
 
 // bio.c
 void            binit(void);
@@ -110,9 +112,12 @@ void            procdump(void);
 // kthread.c
 void                kthreadinit(struct proc *);
 struct kthread*     mykthread();
+//added
+int                 alloctid(struct proc *p);
+struct kthread*     allockthread(struct proc *p);
+//maybe add freethread, i think not because it is static
+//void                freethread(struct kthread *kt);
 
-// TODO: delte this after you are done with task 2.2
-void allocproc_help_function(struct proc *p);
 
 // swtch.S
 void            swtch(struct context*, struct context*);

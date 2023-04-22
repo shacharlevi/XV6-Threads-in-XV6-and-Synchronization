@@ -31,6 +31,37 @@ struct kthread *mykthread()
   return c;
 }
 
+int alloctid(struct proc *p){
+  int tid;
+  acquire(&(p->alloc_lock));
+  tid = p->p_counter;
+  p->p_counter++;
+  release(&(p->alloc_lock));
+  return tid;
+}
+
+struct kthread* allockthread(struct proc *p){
+  for (struct kthread *kt = p->kthread; kt < &p->kthread[NKT]; kt++)
+    {
+      acquire(&kt->t_lock);
+      if(kt->t_state == UNUSED) {
+        kt->tid = alloctid(p);
+        kt->t_state = USED;
+        // Allocate a trapframe page. if failed- return
+        kt->trapframe = get_kthread_trapframe(&kt,&p);
+        // Set up new context to start executing at forkret,
+        // which returns to user space.
+        memset(&kt->context, 0, sizeof(kt->context));
+        kt->context.ra = (uint64)forkret();
+        kt->context.sp = kt->kstack + PGSIZE;
+        return p;
+      } 
+      else {
+        release(&kt->t_lock);
+      }
+  }
+}
+
 static void
 freethread(struct kthread *t){
   t->chan = 0;
@@ -47,14 +78,9 @@ freethread(struct kthread *t){
   release(&t->t_lock);
 }
 
+
 struct trapframe *get_kthread_trapframe(struct proc *p, struct kthread *kt)
 {
   return p->base_trapframes + ((int)(kt - p->kthread));
 }
 
-// TODO: delte this after you are done with task 2.2
-void allocproc_help_function(struct proc *p) {
-  p->kthread->trapframe = get_kthread_trapframe(p, p->kthread);
-
-  p->context.sp = p->kthread->kstack + PGSIZE;
-}
