@@ -6,6 +6,7 @@
 #include "proc.h"
 #include "defs.h"
 
+
 struct cpu cpus[NCPU];
 
 struct proc proc[NPROC];
@@ -148,6 +149,7 @@ found:
   // p->context.ra = (uint64)forkret;
   // p->context.sp = p->kstack + PGSIZE;
   // return p;
+  return 0;
 }
 
 // free a proc structure and the data hanging from it,
@@ -249,7 +251,7 @@ userinit(void)
   // prepare for the very first "return" from kernel to user.
   p->kthread[0].trapframe->epc = 0;      // user program counter
   p->kthread[0].trapframe->sp = PGSIZE;  // user stack pointer
-  p->kthread[0].t_state=RUNNABLE;
+  p->kthread[0].t_state=RUNNABLE_t;
   release(&((p->kthread[0]).t_lock));
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
@@ -333,7 +335,7 @@ fork(void)
 
   np->parent = p;
   np->state=RUNNABLE;
-  new_t->t_state = RUNNABLE;
+  new_t->t_state = RUNNABLE_t;
 
   release(&new_t->t_lock);
   release(&np->lock);
@@ -386,7 +388,7 @@ exit(int status)
   wakeup(p->parent);
   acquire(&p->lock);
   acquire(&p->kthread[0].t_lock);
-  p->kthread[0].t_state=ZOMBIE;
+  p->kthread[0].t_state=ZOMBIE_t;
   release(&p->kthread[0].t_lock);
   p->xstate = status;
   p->state = ZOMBIE;
@@ -503,7 +505,7 @@ scheduler(void)
         // Switch to chosen thread.
         t->process = p;
         //  t->trapframe = p->tr;
-        t->t_state = RUNNING;
+        t->t_state = RUNNING_t;
         c->kthread = t;
         swtch(&c->context, &t->context);
 
@@ -536,7 +538,7 @@ sched(void)
     panic("sched p->lock");
   if(mycpu()->noff != 1)
     panic("sched locks");
-  if(t->t_state == RUNNING)
+  if(t->t_state == RUNNING_t)
     panic("sched running");
   if(intr_get())
     panic("sched interruptible");
@@ -563,7 +565,7 @@ void
 forkret(void)
 {
   static int first = 1;
-
+  release(&(mykthread()->t_lock)); //still holding kt->lock from scheduler
   // Still holding p->lock from scheduler.
   release(&myproc()->lock);
 
@@ -593,7 +595,7 @@ sleep(void *chan, struct spinlock *lk)
   // so it's okay to release lk.
 
   acquire(&p->lock);  //DOC: sleeplock1
-  acquire(&p->kthread[0]);
+  acquire(&p->kthread[0].t_lock);
   release(lk);
 
   // Go to sleep.
@@ -606,7 +608,7 @@ sleep(void *chan, struct spinlock *lk)
   p->kthread[0].chan= 0;
 
   // Reacquire original lock.
-  release(&p->kthread[0]);
+  release(&p->kthread[0].t_lock);
   release(&p->lock);
   acquire(lk);
 }
@@ -621,11 +623,11 @@ wakeup(void *chan)
   for(p = proc; p < &proc[NPROC]; p++) {
     if(p != myproc()){
       acquire(&p->lock);
-      acquire(&p->kthread[0]);
+      acquire(&p->kthread[0].t_lock);
       if(p->state == SLEEPING && p->kthread[0].chan == chan) {
         p->state = RUNNABLE;
       }
-      release(&p->kthread[0]);
+      release(&p->kthread[0].t_lock);
       release(&p->lock);
       
     }
@@ -649,8 +651,8 @@ kill(int pid)
       
       for (struct kthread *t = p->kthread; t < &p->kthread[NKT]; t++) {
         acquire(&t->t_lock);
-        if(t->t_state == SLEEPING) {
-          t->t_state = RUNNABLE;
+        if(t->t_state == SLEEPING_t) {
+          t->t_state = RUNNABLE_t;
         }
         release(&t->t_lock);
       }

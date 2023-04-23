@@ -7,14 +7,14 @@
 #include "defs.h"
 
 extern struct proc proc[NPROC];
-
+extern void forkret(void);
 void kthreadinit(struct proc *p)
 {
   initlock(&(p->alloc_lock),"aloc_thread");
   for (struct kthread *kt = p->kthread; kt < &p->kthread[NKT]; kt++)
   {
     initlock(&kt->t_lock, "thread_lock"); 
-      kt->t_state = UNUSED;
+      kt->t_state = UNUSED_t;
       kt->process=p;
     // WARNING: Don't change this line!
     // get the pointer to the kernel stack of the kthread
@@ -28,7 +28,7 @@ struct kthread *mykthread()
   struct cpu *c = mycpu();
   struct kthread *kthread = c->kthread;
   pop_off();
-  return c;
+  return kthread;
 }
 
 int alloctid(struct proc *p){
@@ -40,34 +40,40 @@ int alloctid(struct proc *p){
   return tid;
 }
 
+struct trapframe *get_kthread_trapframe(struct proc *p, struct kthread *kt)
+{
+  return p->base_trapframes + ((int)(kt - p->kthread));
+}
+
 struct kthread* allockthread(struct proc *p){
   for (struct kthread *kt = p->kthread; kt < &p->kthread[NKT]; kt++)
     {
       acquire(&kt->t_lock);
-      if(kt->t_state == UNUSED) {
+      if(kt->t_state == UNUSED_t) {
         kt->tid = alloctid(p);
-        kt->t_state = USED;
+        kt->t_state = USED_t;
         // Allocate a trapframe page. if failed- return
-        kt->trapframe = get_kthread_trapframe(&kt,&p);
+        kt->trapframe = get_kthread_trapframe(p,kt);
         // Set up new context to start executing at forkret,
         // which returns to user space.
         memset(&kt->context, 0, sizeof(kt->context));
-        kt->context.ra = (uint64)forkret();
+        kt->context.ra = (uint64)forkret;
         kt->context.sp = kt->kstack + PGSIZE;
-        return p;
+        return kt;
       } 
       else {
         release(&kt->t_lock);
       }
   }
+  return 0;
 }
 
-static void
+void
 freethread(struct kthread *t){
   t->chan = 0;
   t->t_killed = 0;
   t->t_xstate = 0;
-  t->t_state = UNUSED;
+  t->t_state = UNUSED_t;
   t->tid=0;
   t->process=0;
   t->kstack=0;
@@ -79,8 +85,5 @@ freethread(struct kthread *t){
 }
 
 
-struct trapframe *get_kthread_trapframe(struct proc *p, struct kthread *kt)
-{
-  return p->base_trapframes + ((int)(kt - p->kthread));
-}
+
 

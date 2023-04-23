@@ -69,7 +69,7 @@ struct context {
   uint64 s10;
   uint64 s11;
 };
-extern struct cpu cpus[NCPU];
+
 // Per-CPU state.
 struct cpu {
   struct kthread *kthread;          // The process running on this cpu, or null.
@@ -77,14 +77,15 @@ struct cpu {
   int noff;                   // Depth of push_off() nesting.
   int intena;                 // Were interrupts enabled before push_off()?
 };
+extern struct cpu cpus[NCPU];
 
-enum threadstate { UNUSED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
+enum threadstate { UNUSED_t, USED_t, SLEEPING_t, RUNNABLE_t, RUNNING_t, ZOMBIE_t };
 
 struct kthread
 {
   //we add:
   struct spinlock t_lock;///lock add
-  enum procstate t_state;        // thread state
+  enum threadstate t_state;        // thread state
   void *chan;                  // If non-zero, sleeping on chan
   int t_killed;                  // If non-zero, have been killed
   int t_xstate;                  // Exit status to be returned to parent's wait

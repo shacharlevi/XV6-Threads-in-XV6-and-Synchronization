@@ -116,6 +116,7 @@ struct kthread*     mykthread();
 int                 alloctid(struct proc *p);
 struct kthread*     allockthread(struct proc *p);
 //maybe add freethread, i think not because it is static
+void                 freethread(struct kthread *t);
 //void                freethread(struct kthread *kt);
 
 
