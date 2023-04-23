@@ -46,17 +46,19 @@ struct trapframe *get_kthread_trapframe(struct proc *p, struct kthread *kt)
 }
 
 struct kthread* allockthread(struct proc *p){
+  
   for (struct kthread *kt = p->kthread; kt < &p->kthread[NKT]; kt++)
     {
       acquire(&kt->t_lock);
       if(kt->t_state == UNUSED_t) {
         kt->tid = alloctid(p);
         kt->t_state = USED_t;
+        kt->process=p;
         // Allocate a trapframe page. if failed- return
         kt->trapframe = get_kthread_trapframe(p,kt);
         // Set up new context to start executing at forkret,
         // which returns to user space.
-        memset(&kt->context, 0, sizeof(kt->context));
+        memset(&kt->context, 0, sizeof(kt->context));   
         kt->context.ra = (uint64)forkret;
         kt->context.sp = kt->kstack + PGSIZE;
         return kt;
