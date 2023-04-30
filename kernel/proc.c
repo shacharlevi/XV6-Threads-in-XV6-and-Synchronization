@@ -87,10 +87,12 @@ myproc(void)
 {
   push_off();
   struct cpu *c = mycpu();
-  acquire(&c->kthread->t_lock);
-  struct proc *p = c->kthread->process;
+  struct proc *p=0;
+  if(c->kthread !=0){
+    struct kthread *kthread = c->kthread;
+    p=kthread->process;
+  }
   pop_off();
-  release(&c->kthread->t_lock);
   return p;
 }
 
@@ -129,13 +131,6 @@ found:
   p->p_counter=1;
   p->pid = allocpid();
   p->state = USED;
-  // struct kthread *new_t=allockthread(p);
-  // if(new_t==0){
-  //   freeproc(p);
-  //    release(&p->lock);
-  //   return (struct proc *)-1;
-  // }
-  // mycpu()->kthread=new_t;///check if remove
   // Allocate a trapframe page.
   if((p->base_trapframes = (struct trapframe *)kalloc()) == 0){
     freeproc(p);
@@ -145,6 +140,7 @@ found:
   struct kthread *new_t=allockthread(p);
   if(new_t==0){
     freeproc(p);
+     release(&new_t->t_lock);
      release(&p->lock);
     return (struct proc *)-1;
   }
@@ -268,7 +264,9 @@ userinit(void)
   p->kthread[0].trapframe->sp=PGSIZE;
   // mykthread()->t_state=RUNNABLE_t;
   p->kthread[0].t_state=RUNNABLE_t;
+
   release(&(p->kthread[0].t_lock));
+
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
 
