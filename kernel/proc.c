@@ -139,15 +139,16 @@ found:
   }
   struct kthread *new_t=allockthread(p);
   if(new_t==0){
+    release(&new_t->t_lock);
     freeproc(p);
-     release(&new_t->t_lock);
-     release(&p->lock);
+    release(&p->lock);
     return (struct proc *)-1;
   }
   // mycpu()->kthread=new_t;///check if remove
   // An empty user page table.
   p->pagetable = proc_pagetable(p);
   if(p->pagetable == 0){
+    release(&new_t->t_lock);
     freeproc(p);
     release(&p->lock);
     return 0;
@@ -169,7 +170,7 @@ freeproc(struct proc *p)
 {
 
    for (struct kthread *kt = p->kthread; kt < &p->kthread[NKT]; kt++){
-      acquire(&kt->t_lock);
+    acquire(&kt->t_lock);
       freethread(kt);
    }
   if(p->base_trapframes)
@@ -314,6 +315,7 @@ fork(void)
   // Copy user memory from parent to child.
   if(uvmcopy(p->pagetable, np->pagetable, p->sz) < 0){
     freeproc(np);
+    release(&np->kthread[0].t_lock);
     release(&np->lock);
     return -1;
   }
@@ -409,6 +411,7 @@ exit(int status)
   release(&wait_lock);
   // Jump into the scheduler, never to return.
   sched();
+  release(&p->lock);
   panic("zombie exit");
 }
 
@@ -568,8 +571,10 @@ yield(void)
   acquire(&p->kthread[0].t_lock);
   p->kthread[0].t_state = RUNNABLE_t;
   release(&p->kthread[0].t_lock);
-  sched();
+   sched();
   release(&p->lock);
+   
+
 }
 
 // A fork child's very first scheduling by scheduler()
