@@ -396,21 +396,31 @@ exit(int status)
   iput(p->cwd);
   end_op();
   p->cwd = 0;
+  
   acquire(&wait_lock);
   // Give any children to init.
   reparent(p);
   // Parent might be sleeping in wait().
   wakeup(p->parent);
+
   acquire(&p->lock);
-  acquire(&p->kthread[0].t_lock);
-  p->kthread[0].t_state=ZOMBIE_t;
   p->xstate = status;
   p->state = ZOMBIE;
-  release(&wait_lock);
+
   release(&p->lock);
+  for(struct kthread *kt=p->kthread;kt<&p->kthread[NKT];kt++){
+    acquire(&kt->t_lock);
+    kt->t_xstate=status;
+    kt->t_state=ZOMBIE_t;
+    if(kt !=mykthread()){
+      release(&kt->t_lock);
+    }
+  }
+
+  release(&wait_lock);
+ 
   // Jump into the scheduler, never to return.
   sched();
-  release(&p->kthread[0].t_lock);
   panic("zombie exit");
 }
 
