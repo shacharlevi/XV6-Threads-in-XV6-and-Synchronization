@@ -306,7 +306,6 @@ fork(void)
   struct proc *np;
   struct proc *p = myproc();
   struct kthread *kt = mykthread();
-  printf("in fork\n");
   // Allocate process.
   if((np = allocproc()) == 0){
     return -1;
@@ -405,13 +404,13 @@ exit(int status)
   acquire(&p->lock);
   acquire(&p->kthread[0].t_lock);
   p->kthread[0].t_state=ZOMBIE_t;
-  release(&p->kthread[0].t_lock);
   p->xstate = status;
   p->state = ZOMBIE;
   release(&wait_lock);
+  release(&p->lock);
   // Jump into the scheduler, never to return.
   sched();
-  release(&p->lock);
+  release(&p->kthread[0].t_lock);
   panic("zombie exit");
 }
 
@@ -511,20 +510,17 @@ scheduler(void)
   for(;;){
     // Avoid deadlock by ensuring that devices can interrupt.
     intr_on();
-    printf("in scheduler\n");
     for(p = proc; p < &proc[NPROC]; p++) {
       // acquire(&p->lock);
       if (p->state==USED){
         for(struct kthread *kt=p->kthread;kt<&p->kthread[NKT];kt++){
           acquire(&kt->t_lock);
             if(kt->t_state == RUNNABLE_t) {
-                  printf("22in scheduler222\n");
 
               kt->t_state = RUNNING_t;
               c->kthread=kt;
               swtch(&c->context, &kt->context);
               c->kthread = 0;
-                                printf("33in scheduler333\n");
 
             }
         release(&kt->t_lock); // Release the thread lock
@@ -546,7 +542,6 @@ sched(void)
 {
   int intena;
   struct kthread *t = mykthread();
-
   if(!holding(&t->t_lock))
     panic("sched p->lock");
   if(mycpu()->noff != 1)
@@ -565,14 +560,14 @@ sched(void)
 void
 yield(void)
 {
-  printf("in yield\n");
   struct proc *p = myproc();
-  acquire(&p->lock);
+  // acquire(&p->lock);
   acquire(&p->kthread[0].t_lock);
   p->kthread[0].t_state = RUNNABLE_t;
+  // release(&p->lock);
+     sched();
   release(&p->kthread[0].t_lock);
-   sched();
-  release(&p->lock);
+ 
    
 
 }
@@ -582,13 +577,12 @@ yield(void)
 void
 forkret(void)
 {
-  printf("forkret\n");
   static int first = 1;
   release(&(mykthread()->t_lock)); //still holding kt->lock from scheduler
   // Still holding p->lock from scheduler.
   // release(&myproc()->lock);
-
   if (first) {
+
     // File system initialization must be run in the context of a
     // regular process (e.g., because it calls sleep), and thus cannot
     // be run from main().
@@ -612,8 +606,7 @@ sleep(void *chan, struct spinlock *lk)
   // guaranteed that we won't miss any wakeup
   // (wakeup locks p->lock),
   // so it's okay to release lk.
-
-  acquire(&p->lock);  //DOC: sleeplock1
+  // acquire(&p->lock);  //DOC: sleeplock1 mayby return
   acquire(&p->kthread[0].t_lock);
   release(lk);
 
@@ -628,8 +621,9 @@ sleep(void *chan, struct spinlock *lk)
 
   // Reacquire original lock.
   release(&p->kthread[0].t_lock);
-  release(&p->lock);
+  // release(&p->lock);//mayby return
   acquire(lk);
+
 }
 
 // Wake up all processes sleeping on chan.
@@ -640,9 +634,7 @@ wakeup(void *chan)
   struct proc *p;
   struct kthread *kt;
   for(p = proc; p < &proc[NPROC]; p++) {
-              printf("start of wakeup\n");
     // acquire(&p->lock);
-      printf("in wakeup\n");
       // acquire(&p->lock);
     for(kt=p->kthread;kt<&p->kthread[NKT];kt++){
         if(kt !=mykthread()){
@@ -652,7 +644,6 @@ wakeup(void *chan)
         }
         release(&kt->t_lock);
       // release(&p->lock);
-          printf("out wakeup\n");
 
        }
     }
