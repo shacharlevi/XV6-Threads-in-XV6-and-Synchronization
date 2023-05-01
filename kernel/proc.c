@@ -608,7 +608,7 @@ forkret(void)
 void
 sleep(void *chan, struct spinlock *lk)
 {
-  struct proc *p = myproc();
+  struct kthread *kt = mykthread();
   
   // Must acquire p->lock in order to
   // change p->state and then call sched.
@@ -617,20 +617,20 @@ sleep(void *chan, struct spinlock *lk)
   // (wakeup locks p->lock),
   // so it's okay to release lk.
   // acquire(&p->lock);  //DOC: sleeplock1 mayby return
-  acquire(&p->kthread[0].t_lock);
+  acquire(&kt->t_lock);
   release(lk);
 
   // Go to sleep.
-  p->kthread[0].chan = chan;
-  p->kthread[0].t_state = SLEEPING_t;
+  kt->chan = chan;
+  kt->t_state = SLEEPING_t;
 
   sched();
 
   // Tidy up.
-  p->kthread[0].chan= 0;
+  kt->chan= 0;
 
   // Reacquire original lock.
-  release(&p->kthread[0].t_lock);
+  release(&kt->t_lock);
   // release(&p->lock);//mayby return
   acquire(lk);
 
