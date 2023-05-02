@@ -36,7 +36,6 @@ copyin(char *s)
 
   for(int ai = 0; ai < 2; ai++){
     uint64 addr = addrs[ai];
-    
     int fd = open("copyin1", O_CREATE|O_WRONLY);
     if(fd < 0){
       printf("open(copyin1) failed\n");
@@ -2951,10 +2950,13 @@ run(void f(char *), char *s) {
     printf("runtest: fork error\n");
     exit(1);
   }
+  // printf("mypid %d",pid);
   if(pid == 0) {
+    printf("in run pid==0\n");
     f(s);
     exit(0);
   } else {
+    // printf("else in run %d\n",pid);
     wait(&xstatus);
     if(xstatus != 0) 
       printf("FAILED\n");

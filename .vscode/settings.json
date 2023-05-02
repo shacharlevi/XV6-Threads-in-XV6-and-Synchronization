@@ -8,6 +8,9 @@
         "fcntl.h": "c",
         "stdio.h": "c",
         "user.h": "c",
-        "kthread.h": "c"
+        "kthread.h": "c",
+        "syscall.h": "c",
+        "stat.h": "c",
+        "param.h": "c"
     },
 }

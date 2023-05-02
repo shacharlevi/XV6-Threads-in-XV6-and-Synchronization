@@ -1,9 +1,19 @@
 // Test that fork fails gracefully.
 // Tiny executable so that the limit can be filling the proc table.
 
+// #include "kernel/types.h"
+// #include "kernel/stat.h"
+// #include "user/user.h"
+
+#include "kernel/param.h"
 #include "kernel/types.h"
 #include "kernel/stat.h"
 #include "user/user.h"
+#include "kernel/fs.h"
+#include "kernel/fcntl.h"
+#include "kernel/syscall.h"
+#include "kernel/memlayout.h"
+#include "kernel/riscv.h"
 
 #define N  1000
 
@@ -25,6 +35,8 @@ forktest(void)
     if(pid < 0)
       break;
     if(pid == 0)
+        print("in forktest id ==0\n");
+
       exit(0);
   }
 

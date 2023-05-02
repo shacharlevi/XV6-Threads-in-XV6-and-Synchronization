@@ -63,6 +63,7 @@ void uthread_yield() {
 }
 
 void uthread_exit(){
+    printf("in uthresd exit\n");
     // Change the state of the current thread to FREE
     curr_thread->state = FREE;
     // Find another runnable thread to switch to (make sure its not the current_thread)
