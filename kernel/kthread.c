@@ -70,34 +70,35 @@ struct kthread* allockthread(struct proc *p){
   return 0;
 }
 
-// void
-// freethread(struct kthread *t){
-//   t->chan = 0;
-//   t->t_killed = 0;
-//   t->t_xstate = 0;
-//   t->t_state = UNUSED_t;
-//   t->tid=0;
-//   t->process=0;
-//   t->kstack=0;
-//   if(t->trapframe)
-//     kfree((void*)t->trapframe);
-//   t->trapframe = 0;
-//   memset(&t->context,0,sizeof(&t->context));
-//   release(&t->t_lock);
-// }
-
-void freethread(struct kthread* k){
-  if (k == 0)
-      return;
-      
-  acquire(&k->t_lock);
-  k->trapframe = 0;
-  k->t_state = UNUSED_t;
-  k->chan = 0;
-  k->t_killed = 0;
-  k->t_xstate = 0;
-  k->tid = 0;
-  release(&k->t_lock);
+void
+freethread(struct kthread *t){
+  t->chan = 0;//
+  t->t_killed = 0;//
+  t->t_xstate = 0;//
+  t->t_state = UNUSED_t;//
+  t->tid=0;//
+  t->process=0;//
+  // t->kstack=0;
+  // if(t->trapframe)
+  //   kfree((void*)t->trapframe);
+  t->trapframe = 0;//
+  memset(&t->context,0,sizeof(&t->context));//
+  release(&t->t_lock);
 }
+
+ 
+// void freethread(struct kthread* k){
+//   if (k == 0)
+//       return;
+      
+//   // acquire(&k->t_lock);
+//   k->trapframe = 0;
+//   k->t_state = UNUSED_t;
+//   k->chan = 0;
+//   k->t_killed = 0;
+//   k->t_xstate = 0;
+//   k->tid = 0;
+//   // release(&k->t_lock);
+// }
 
 

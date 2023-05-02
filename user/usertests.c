@@ -33,9 +33,11 @@ void
 copyin(char *s)
 {
   uint64 addrs[] = { 0x80000000LL, 0xffffffffffffffff };
+    printf("in copyin\n");
 
   for(int ai = 0; ai < 2; ai++){
     uint64 addr = addrs[ai];
+    printf("222in copyin\n");
     int fd = open("copyin1", O_CREATE|O_WRONLY);
     if(fd < 0){
       printf("open(copyin1) failed\n");
@@ -2619,18 +2621,18 @@ struct test {
   {forktest, "forktest"},
   {sbrkbasic, "sbrkbasic"},
   {sbrkmuch, "sbrkmuch"},
-  {kernmem, "kernmem"},
-  {MAXVAplus, "MAXVAplus"},
-  {sbrkfail, "sbrkfail"},
+  {kernmem, "kernmem"},///stuck here
+  {MAXVAplus, "MAXVAplus"},//and here
+  {sbrkfail, "sbrkfail"},//and here
   {sbrkarg, "sbrkarg"},
   {validatetest, "validatetest"},
   {bsstest, "bsstest"},
   {bigargtest, "bigargtest"},
   {argptest, "argptest"},
-  {stacktest, "stacktest"},
-  {textwrite, "textwrite"},
+  {stacktest, "stacktest"},//and here
+  {textwrite, "textwrite"},//and here
   {pgbug, "pgbug" },
-  {sbrkbugs, "sbrkbugs" },
+  {sbrkbugs, "sbrkbugs" },//and here
   {sbrklast, "sbrklast"},
   {sbrk8000, "sbrk8000"},
   {badarg, "badarg" },
@@ -2950,13 +2952,13 @@ run(void f(char *), char *s) {
     printf("runtest: fork error\n");
     exit(1);
   }
-  // printf("mypid %d",pid);
+  printf("mypid %d",pid);
   if(pid == 0) {
     printf("in run pid==0\n");
     f(s);
     exit(0);
   } else {
-    // printf("else in run %d\n",pid);
+    printf("else in run %d\n",pid);
     wait(&xstatus);
     if(xstatus != 0) 
       printf("FAILED\n");

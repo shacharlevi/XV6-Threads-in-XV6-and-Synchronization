@@ -35,7 +35,6 @@ forktest(void)
     if(pid < 0)
       break;
     if(pid == 0)
-        print("in forktest id ==0\n");
 
       exit(0);
   }

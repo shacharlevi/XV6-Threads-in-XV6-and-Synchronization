@@ -383,6 +383,7 @@ exit(int status)
 {
   struct proc *p = myproc();
   if(p == initproc)
+    panic("init exiting");
   // Close all open files.
   for(int fd = 0; fd < NOFILE; fd++){
     if(p->ofile[fd]){
@@ -417,7 +418,7 @@ exit(int status)
   }
 
   release(&wait_lock);
-   printf("end of exit proc.c\n");
+  //  printf("end of exit proc.c\n");
 
   // Jump into the scheduler, never to return.
   sched();
