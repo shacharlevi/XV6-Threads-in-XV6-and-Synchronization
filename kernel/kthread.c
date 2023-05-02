@@ -72,33 +72,107 @@ struct kthread* allockthread(struct proc *p){
 
 void
 freethread(struct kthread *t){
-  t->chan = 0;//
-  t->t_killed = 0;//
-  t->t_xstate = 0;//
-  t->t_state = UNUSED_t;//
-  t->tid=0;//
-  t->process=0;//
-  // t->kstack=0;
-  // if(t->trapframe)
-  //   kfree((void*)t->trapframe);
-  t->trapframe = 0;//
-  memset(&t->context,0,sizeof(&t->context));//
+  t->chan = 0;
+  t->t_killed = 0;
+  t->t_xstate = 0;
+  t->t_state = UNUSED_t;
+  t->tid=0;
+  t->process=0;
+  t->trapframe = 0;
+  memset(&t->context,0,sizeof(&t->context));
   release(&t->t_lock);
 }
 
- 
-// void freethread(struct kthread* k){
-//   if (k == 0)
-//       return;
-      
-//   // acquire(&k->t_lock);
-//   k->trapframe = 0;
-//   k->t_state = UNUSED_t;
-//   k->chan = 0;
-//   k->t_killed = 0;
-//   k->t_xstate = 0;
-//   k->tid = 0;
-//   // release(&k->t_lock);
-// }
+
+// find UNUSED thread from the calling proc 
+// set state to runnable , alloc stack(malloc)-4000 bytes(macro),
+//set epc to start_func,sp to top of the stack
+// return tid or -1 if no UNUSED thread found
+int kthread_create(void *(*start_func)(), void *stack, uint stack_size){
+struct proc* p = myproc();
+struct kthread *t = allocthread(p);
+if(t == 0){
+  return -1;
+}
+t->trapframe->epc = (uint64)start_func;
+t->trapframe->sp = (uint64)stack + stack_size;
+t->t_state = RUNNABLE_t;
+release(&t->t_lock);
+return t->tid;
+}
+
+int kthread_kill(int ktid){
+  struct proc *p = myproc();
+  struct kthread *kt;
+
+  for(kt = p->kthread; kt < &p->kthread[NKT]; kt++){
+    acquire(&kt->t_lock);
+    if(kt->tid == ktid){
+      kt->t_killed = 1;
+      if(kt->t_state == SLEEPING_t){
+      // Wake thread from sleep().
+      kt->t_state = RUNNABLE_t;
+      }
+      release(&kt->t_lock);
+      return 0;
+    }
+    release(&kt->t_lock);
+  }
+  return -1;
+}
+
+
+int
+t_killed(struct kthread *t)
+{
+  int k;
+  acquire(&t->t_lock);
+  t = t->t_killed;
+  release(&t->t_lock);
+  return k;
+}
+int
+if_last_thread(struct kthread *kt){
+  struct kthread* t;
+  struct proc *p = myproc();
+  for(t = p->kthread; t < &p->kthread[NKT]; t++){
+    if(t != kt){
+      acquire(&t->t_lock);
+      if(t->t_state != UNUSED_t && t->t_state != ZOMBIE_t){
+        release(&t->t_lock);
+        return 0;
+      }
+      release(&t->t_lock);
+    }
+  }
+  return 1;
+}
+
+void
+kthread_exit(int status){
+  struct proc *p = myproc();
+  struct kthread *t = mykthread();
+
+  if(if_last_thread(t)){
+    exit(status);
+  }
+  
+  acquire(&t->t_lock);
+  t->t_state = ZOMBIE_t;
+  t->t_xstate = status;
+  release(&t->t_lock);
+  
+  acquire(&p->lock); 
+  wakeup(t);
+  release(&p->lock);
+  
+  acquire(&t->t_lock);
+  sched();
+  panic("zombie exit");
+}
+
+int 
+kthread_join(int ktid, int *status){
+}
 
 
