@@ -90,7 +90,7 @@ freethread(struct kthread *t){
 // return tid or -1 if no UNUSED thread found
 int kthread_create(void *(*start_func)(), void *stack, uint stack_size){
 struct proc* p = myproc();
-struct kthread *t = allocthread(p);
+struct kthread *t = allockthread(p);
 if(t == 0){
   return -1;
 }
@@ -122,15 +122,15 @@ int kthread_kill(int ktid){
 }
 
 
-int
-t_killed(struct kthread *t)
-{
-  int k;
-  acquire(&t->t_lock);
-  t = t->t_killed;
-  release(&t->t_lock);
-  return k;
-}
+// int
+// t_killed(struct kthread *t)
+// {
+//   int k;
+//   acquire(&t->t_lock);
+//   k = t->t_killed;
+//   release(&t->t_lock);
+//   return k;
+// }
 int
 if_last_thread(struct kthread *kt){
   struct kthread* t;

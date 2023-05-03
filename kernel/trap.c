@@ -6,6 +6,8 @@
 #include "proc.h"
 #include "defs.h"
 
+
+
 struct spinlock tickslock;
 uint ticks;
 
@@ -54,13 +56,9 @@ usertrap(void)
     // system call
 
     if(killed(p))
-    {
-      if(t_killed(kt)){
-        kthread_exit(kt);
-      }
       exit(-1);
-
-    }
+    if(kthread_kill(kt))
+      kthread_exit(-1);
 
     // sepc points to the ecall instruction,
     // but we want to return to the next instruction.
@@ -79,12 +77,11 @@ usertrap(void)
     setkilled(p);
   }
 
-  if(killed(p)){
-    if(t_killed(kt)){
-        kthread_exit(kt);
-      }
-    exit(-1);
-  }
+  if(killed(p))
+      exit(-1);
+    if(kthread_kill(kt))
+      kthread_exit(-1);
+
   // give up the CPU if this is a timer interrupt.
   if(which_dev == 2)
     yield();
