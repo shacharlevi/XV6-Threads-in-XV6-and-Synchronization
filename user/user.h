@@ -1,3 +1,5 @@
+#define STACKSIZE    4000 ///for 2.3 kthread_create
+
 struct stat;
 
 // system calls
@@ -39,3 +41,11 @@ void free(void*);
 int atoi(const char*);
 int memcmp(const void *, const void *, uint);
 void *memcpy(void *, const void *, uint);
+
+
+//2.3
+int kthread_create(void*, uint64, uint);
+int kthread_id(void);
+int kthread_kill(int);
+void kthread_exit(int);
+int kthread_join(int, int*);
