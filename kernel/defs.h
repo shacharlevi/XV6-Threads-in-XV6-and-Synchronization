@@ -117,7 +117,12 @@ int                 alloctid(struct proc *p);
 struct kthread*     allockthread(struct proc *p);
 //maybe add freethread, i think not because it is static
 void                 freethread(struct kthread *t);
-//void                freethread(struct kthread *kt);
+//2.3
+int                  kthread_kill(int ktid);
+void                 kthread_exit(int status);
+int                  kthread_join(int ktid, int *status);
+int                  kthread_create(void *(*start_func)(), void *stack, uint stack_size);
+int                  t_killed(struct kthread *t);
 
 
 // swtch.S

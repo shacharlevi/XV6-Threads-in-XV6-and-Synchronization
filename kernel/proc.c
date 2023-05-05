@@ -382,8 +382,21 @@ void
 exit(int status)
 {
   struct proc *p = myproc();
+  struct kthread *kt =mykthread();
   if(p == initproc)
     panic("init exiting");
+  for(struct kthread *t2 = p->kthread ; t2< &p->kthread[NKT]; t2++){
+      if(kt !=t2){
+        acquire(&t2->t_lock);
+        if(t2->t_state != UNUSED_t && t2->t_state != ZOMBIE_t){
+          t2->t_killed = 1;
+          release(&t2->t_lock);  
+          kthread_join(kt->tid,0);
+        }
+          release(&t2->t_lock);  
+
+      }
+    }
   // Close all open files.
   for(int fd = 0; fd < NOFILE; fd++){
     if(p->ofile[fd]){
@@ -481,37 +494,6 @@ wait(uint64 addr)
 //  - swtch to start running that process.
 //  - eventually that process transfers control
 //    via swtch back to the scheduler.
-// void
-// scheduler(void)
-// {
-//   struct proc *p;
-//   struct cpu *c = mycpu();
-  
-//   c->proc = 0;
-//   for(;;){
-//     // Avoid deadlock by ensuring that devices can interrupt.
-//     intr_on();
-
-//     for(p = proc; p < &proc[NPROC]; p++) {
-//       acquire(&p->lock);
-//       if(p->state == RUNNABLE) {
-//         // Switch to chosen process.  It is the process's job
-//         // to release its lock and then reacquire it
-//         // before jumping back to us.
-//         p->state = RUNNING;
-//         c->proc = p;
-//         swtch(&c->context, &p->context);
-
-//         // Process is done running for now.
-//         // It should have changed its p->state before coming back.
-//         c->proc = 0;
-//       }
-//       release(&p->lock);
-//     }
-//   }
-// }
-
-
 void
 scheduler(void)
 {
@@ -535,10 +517,10 @@ scheduler(void)
 
             }
         release(&kt->t_lock); // Release the thread lock
+        }
       }
     }
   }
-}
 }
 
 // Switch to scheduler.  Must hold only p->lock

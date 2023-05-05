@@ -11,6 +11,7 @@
         "kthread.h": "c",
         "syscall.h": "c",
         "stat.h": "c",
-        "param.h": "c"
+        "param.h": "c",
+        "typeinfo": "c"
     },
 }

@@ -2,6 +2,7 @@
 
 struct stat;
 
+
 // system calls
 int fork(void);
 int exit(int) __attribute__((noreturn));
@@ -44,7 +45,7 @@ void *memcpy(void *, const void *, uint);
 
 
 //2.3
-int kthread_create(void*, uint64, uint);
+int kthread_create(void*, void*, uint);
 int kthread_id(void);
 int kthread_kill(int);
 void kthread_exit(int);

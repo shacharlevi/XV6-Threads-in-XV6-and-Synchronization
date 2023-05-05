@@ -7,6 +7,7 @@
 #include "kernel/syscall.h"
 #include "kernel/memlayout.h"
 #include "kernel/riscv.h"
+#include "uthread.h"
 
 //
 // Tests xv6 system calls.  usertests without arguments runs them all
@@ -2572,6 +2573,90 @@ badarg(char *s)
   exit(0);
 }
 
+
+// starting the OS232 Assignment 2 simple tests
+
+volatile enum sched_priority x;
+
+
+void uthread_a_start_func(void){
+  if(x != MEDIUM){
+    printf("sched policy failed\n");
+    exit(1);
+  }
+  if(uthread_get_priority() != LOW){
+    printf("uthread_get_priority failed\n");
+    exit(1);
+  }
+  for(int i=0; i<10; i++){
+    sleep(10); // simulate work
+  }
+  uthread_exit();
+  printf("uthread_exit failed\n");
+  exit(1);
+}
+
+void uthread_b_start_func(void){
+  for(int i=0; i<10; i++){
+    sleep(10); // simulate work
+  }
+  x = uthread_get_priority();
+  uthread_exit();
+  printf("uthread_exit failed\n");
+  exit(1);
+}
+
+void ulttest()
+{
+  x = HIGH;
+  uthread_create(uthread_a_start_func, LOW);
+  uthread_create(uthread_b_start_func, MEDIUM);
+  uthread_start_all();
+  printf("uthread_start_all failed\n");
+  exit(1);
+}
+
+
+void kthread_start_func(void){
+  for(int i=0; i<10; i++){
+    sleep(10); // simulate work
+  }
+  kthread_exit(0);
+  printf("kthread_exit failed\n");
+  exit(1);
+}
+
+void klttest()
+{
+  uint64 stack_a = (uint64)malloc(STACK_SIZE);
+  uint64 stack_b = (uint64)malloc(STACK_SIZE);
+
+  int kt_a = kthread_create((void *(*)())kthread_start_func,(void*) stack_a, STACK_SIZE);
+  if(kt_a <= 0){
+    printf("kthread_create failed\n");
+    exit(1);
+  }
+  int kt_b = kthread_create((void *(*)())kthread_start_func,(void*)  stack_b, STACK_SIZE);
+  if(kt_a <= 0){
+    printf("kthread_create failed\n");
+    exit(1);
+  }
+  int joined = kthread_join(kt_a, 0);
+  if(joined != 0){
+    printf("kthread_join failed\n");
+    exit(1);
+  }
+
+  joined = kthread_join(kt_b, 0);
+  if(joined != 0){
+    printf("kthread_join failed\n");
+    exit(1);
+  }
+
+  free((void *)stack_a);
+  free((void *)stack_b);
+}
+
 struct test {
   void (*f)(char *);
   char *s;
@@ -2636,6 +2721,8 @@ struct test {
   {sbrklast, "sbrklast"},
   {sbrk8000, "sbrk8000"},
   {badarg, "badarg" },
+  {ulttest, "ulttest"},
+  {klttest, "klttest"},
 
   { 0, 0},
 };
@@ -2952,13 +3039,10 @@ run(void f(char *), char *s) {
     printf("runtest: fork error\n");
     exit(1);
   }
-  printf("mypid %d",pid);
   if(pid == 0) {
-    printf("in run pid==0\n");
     f(s);
     exit(0);
   } else {
-    printf("else in run %d\n",pid);
     wait(&xstatus);
     if(xstatus != 0) 
       printf("FAILED\n");
