@@ -111,20 +111,32 @@ exec(char *path, char **argv)
   if(copyout(pagetable, sp, (char *)ustack, (argc+1)*sizeof(uint64)) < 0)
     goto bad;
 
-  for(struct kthread *t2 = p->kthread ; t2< &p->kthread[NKT]; t2++){
-    if(kt !=t2 && t2->t_state != UNUSED_t){
-      acquire(&t2->t_lock);
-      t2->t_xstate = 0;
-      t2->t_state = ZOMBIE_t;
-      release(&t2->t_lock);  
-    }
-  }
+  // for(struct kthread *t2 = p->kthread ; t2< &p->kthread[NKT]; t2++){
+  //   if(kt !=t2 && t2->t_state != UNUSED_t){
+  //     acquire(&t2->t_lock);
+  //     t2->t_xstate = 0;
+  //     t2->t_state = ZOMBIE_t;
+  //     release(&t2->t_lock);  
+  //   }
+  // }
 
-  for(struct kthread *t2 = p->kthread ; t2< &p->kthread[NKT]; t2++){
-    if(kt !=t2 && t2->t_state != UNUSED_t){
-      kthread_join(t2->tid,0);
+  // for(struct kthread *t2 = p->kthread ; t2< &p->kthread[NKT]; t2++){
+  //   if(kt !=t2 && t2->t_state != UNUSED_t){
+  //     kthread_join(t2->tid,0);
+  //   }
+  // }
+    for(struct kthread *t2 = p->kthread ; t2< &p->kthread[NKT]; t2++){
+      if(kt !=t2){
+        acquire(&t2->t_lock);
+        if(t2->t_state != UNUSED_t && t2->t_state != ZOMBIE_t){
+          t2->t_killed = 1;
+          release(&t2->t_lock);  
+          kthread_join(kt->tid,0);
+        }
+          release(&t2->t_lock);  
+
+      }
     }
-  }
   // arguments to user main(argc, argv)
   // argc is returned via the system call return
   // value, which goes in a0.
